@@ -1,0 +1,8 @@
+{
+  "name": "Remix: MedFlow+",
+  "description": "Smart healthcare management and emergency response system. Features path optimization, dashboards, and DSA visualizations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
