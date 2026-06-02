@@ -1,0 +1,132 @@
+class BTreeNode {
+	int[] keys;
+	BTreeNode[] children;
+	int keyCount;
+	boolean leaf;
+
+	BTreeNode(int order, boolean leaf) {
+		this.leaf = leaf;
+		keys = new int[order - 1];
+		children = new BTreeNode[order];
+		keyCount = 0;
+	}
+}
+
+class BTree {
+	BTreeNode root;
+	int order;
+
+	BTree(int order) {
+		this.order = order;
+		root = new BTreeNode(order, true);
+	}
+
+	void insert(int key) {
+		BTreeNode r = root;
+
+		if (r.keyCount == order - 1) {
+			BTreeNode newRoot = new BTreeNode(order, false);
+			newRoot.children[0] = r;
+
+			splitChild(newRoot, 0, r);
+
+			root = newRoot;
+			insertNonFull(newRoot, key);
+		} else {
+			insertNonFull(r, key);
+		}
+	}
+
+	void insertNonFull(BTreeNode node, int key) {
+		int i = node.keyCount - 1;
+
+		if (node.leaf) {
+			while (i >= 0 && key < node.keys[i]) {
+				node.keys[i + 1] = node.keys[i];
+				i--;
+			}
+
+			node.keys[i + 1] = key;
+			node.keyCount++;
+		} else {
+			while (i >= 0 && key < node.keys[i]) {
+				i--;
+			}
+
+			i++;
+
+			if (node.children[i].keyCount == order - 1) {
+				splitChild(node, i, node.children[i]);
+
+				if (key > node.keys[i]) {
+					i++;
+				}
+			}
+
+			insertNonFull(node.children[i], key);
+		}
+	}
+
+	void splitChild(BTreeNode parent, int index, BTreeNode fullChild) {
+		int mid = (order - 1) / 2;
+
+		BTreeNode newNode = new BTreeNode(order, fullChild.leaf);
+		newNode.keyCount = mid;
+
+		for (int j = 0; j < mid; j++) {
+			newNode.keys[j] = fullChild.keys[j + mid + 1];
+		}
+
+		if (!fullChild.leaf) {
+			for (int j = 0; j <= mid; j++) {
+				newNode.children[j] = fullChild.children[j + mid + 1];
+			}
+		}
+
+		fullChild.keyCount = mid;
+
+		for (int j = parent.keyCount; j >= index + 1; j--) {
+			parent.children[j + 1] = parent.children[j];
+		}
+
+		parent.children[index + 1] = newNode;
+
+		for (int j = parent.keyCount - 1; j >= index; j--) {
+			parent.keys[j + 1] = parent.keys[j];
+		}
+
+		parent.keys[index] = fullChild.keys[mid];
+		parent.keyCount++;
+	}
+
+	void print(BTreeNode node) {
+		int i;
+
+		for (i = 0; i < node.keyCount; i++) {
+			if (!node.leaf) {
+				print(node.children[i]);
+			}
+
+			System.out.print(node.keys[i] + " ");
+		}
+
+		if (!node.leaf) {
+			print(node.children[i]);
+		}
+	}
+}
+
+public class Main {
+	public static void main(String[] args) {
+		BTree tree = new BTree(4);
+
+		int[] values = {10, 20, 5, 6, 12, 30, 7, 17};
+
+		for (int v : values) {
+			tree.insert(v);
+		}
+
+		System.out.println("B-Tree Traversal:");
+		tree.print(tree.root);
+	}
+}
